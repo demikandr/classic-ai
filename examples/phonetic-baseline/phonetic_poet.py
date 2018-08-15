@@ -5,7 +5,7 @@ import os
 import copy
 
 from utils import Phonetic, PoemTemplateLoader, Word2vecProcessor
-from nltk.corpus import stopwords
+import nltk.corpus
 
 # Каталог с общими наборами данных, доступный на проверяющем сервере
 # Нет необходимости добавлять файлы из этого каталога в архив с решением
@@ -25,6 +25,8 @@ phonetic = Phonetic('data/words_accent.json.bz2')
 # word_by_form = phonetic.form_dictionary_from_csv(os.path.join(DATASETS_PATH, 'sdsj2017_sberquad.csv'))
 word_by_form = phonetic.from_accents_dict()
 
+stopwords = nltk.corpus.stopwords.words('russian')
+accents_dict_keys = set(phonetic.accents_dict.keys()) 
 def generate_poem(seed, poet_id):
     """
     Алгоритм генерации стихотворения на основе фонетических шаблонов
@@ -45,9 +47,9 @@ def generate_poem(seed, poet_id):
                 continue
 
             word = token.lower()
-            if word in stopwords.words('russian'):
+            if word in stopwords:
                 continue
-            if word not in phonetic.accents_dict.keys():
+            if word not in accents_dict_keys:
                 continue
             # выбираем слова - кандидаты на замену: максимально похожие фонетически на исходное слово
             form = phonetic.get_form(token)
