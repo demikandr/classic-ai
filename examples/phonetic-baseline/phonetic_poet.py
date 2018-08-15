@@ -1,7 +1,11 @@
+# import nltk
+# nltk.download('stopwords')
+
 import os
 import copy
 
 from utils import Phonetic, PoemTemplateLoader, Word2vecProcessor
+from nltk.corpus import stopwords
 
 # Каталог с общими наборами данных, доступный на проверяющем сервере
 # Нет необходимости добавлять файлы из этого каталога в архив с решением
@@ -18,8 +22,8 @@ word2vec = Word2vecProcessor(os.path.join(DATASETS_PATH, 'rusvectores/web_upos_c
 phonetic = Phonetic('data/words_accent.json.bz2')
 
 # Словарь слов-кандидатов по фонетическим формам: строится из набора данных SDSJ 2017
-word_by_form = phonetic.form_dictionary_from_csv(os.path.join(DATASETS_PATH, 'sdsj2017_sberquad.csv'))
-
+# word_by_form = phonetic.form_dictionary_from_csv(os.path.join(DATASETS_PATH, 'sdsj2017_sberquad.csv'))
+word_by_form = phonetic.from_accents_dict()
 
 def generate_poem(seed, poet_id):
     """
@@ -29,18 +33,22 @@ def generate_poem(seed, poet_id):
     # выбираем шаблон на основе случайного стихотворения из корпуса
     template = template_loader.get_random_template(poet_id)
     poem = copy.deepcopy(template)
+    print('\n'.join((' '.join(line) for line in poem)))
 
     # оцениваем word2vec-вектор темы
     seed_vec = word2vec.text_vector(seed)
 
     # заменяем слова в шаблоне на более релевантные теме
     for li, line in enumerate(poem):
-        for ti, token in enumerate(line):
+        for ti, token in enumerate(line[:-1]):
             if not token.isalpha():
                 continue
 
             word = token.lower()
-
+            if word in stopwords.words('russian'):
+                continue
+            if word not in phonetic.accents_dict.keys():
+                continue
             # выбираем слова - кандидаты на замену: максимально похожие фонетически на исходное слово
             form = phonetic.get_form(token)
             candidate_phonetic_distances = [
@@ -49,9 +57,11 @@ def generate_poem(seed, poet_id):
                 ]
             if not candidate_phonetic_distances or form == (0, 0):
                 continue
-            min_phonetic_distance = min(d for w, d in candidate_phonetic_distances)
-            replacement_candidates = [w for w, d in candidate_phonetic_distances if d == min_phonetic_distance]
+            # min_phonetic_distance = min(d for w, d in candidate_phonetic_distances)
+            # replacement_candidates = [w for w, d in candidate_phonetic_distances if d == min_phonetic_distance]
+            replacement_candidates = [w for w, d in candidate_phonetic_distances]
 
+            replacement_candidates.append(token)
             # из кандидатов берем максимально близкое теме слово
             word2vec_distances = [
                 (replacement_word, word2vec.distance(seed_vec, word2vec.word_vector(replacement_word)))

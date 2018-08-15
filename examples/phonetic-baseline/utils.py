@@ -3,6 +3,7 @@ import csv
 import json
 import random
 import collections
+from collections import defaultdict
 import itertools
 
 import numpy as np
@@ -45,6 +46,12 @@ class Phonetic(object):
         distance = sum((ch1 != ch2) for ch1, ch2 in zip(suffix1, suffix2))
         return distance
 
+    def from_accents_dict(self):
+        word_by_form = defaultdict(set)
+        for word, accent in self.accents_dict.items():
+            word_by_form[self.get_form(word)].add(word)
+        return word_by_form
+    
     def form_dictionary_from_csv(self, corpora_file, column='paragraph', max_docs=30000):
         """Загрузить словарь слов из CSV файла с текстами, индексированный по формам слова.
         Возвращает словарь вида:
@@ -63,6 +70,9 @@ class Phonetic(object):
         word_by_form = collections.defaultdict(set)
         for token in corpora_tokens:
             if token.isalpha():
+                token = token.lower()
+                if token not in self.accents_dict.keys():
+                    continue
                 word_syllables = self.syllables_count(token)
                 word_accent = self.accent_syllable(token)
                 form = (word_syllables, word_accent)
