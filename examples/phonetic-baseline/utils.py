@@ -128,10 +128,17 @@ class Word2vecProcessor(object):
         self.mystem = Mystem()
         self.word2vec = KeyedVectors.load_word2vec_format(w2v_model_file, binary=True)
         self.lemma2word = {word.split('_')[0]: word for word in self.word2vec.index2word}
+        self.word2lemma2word = {}
 
-    def word_vector(self, word):
+    def get_word2lemma2word(self, word):
         lemma = self.mystem.lemmatize(word)[0]
         word = self.lemma2word.get(lemma)
+        return word
+        
+    def word_vector(self, word):
+        if word not in self.word2lemma2word:
+            self.word2lemma2word[word] = self.get_word2lemma2word(word)
+        word = self.word2lemma2word[word]
         return self.word2vec[word] if word in self.word2vec else None
 
     def text_vector(self, text):
