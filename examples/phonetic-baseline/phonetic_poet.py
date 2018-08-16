@@ -83,6 +83,8 @@ def generate_poem(seed, poet_id):
             replacement_vecs = (word2vec.word_vector(word) for word in replacement_candidates)
             replacement_candidates, replacement_vecs = list(zip(\
                 *[(word, vec) for word, vec in zip(replacement_candidates, replacement_vecs) if vec is not None]))
+            if len(replacement_candidates) == 0:
+                break
             replacement_distances = word2vec.distances(np.vstack(replacement_vecs), np.array([seed_vec,]))
             word2vec_distances = [
                 (replacement_word, replacement_distance)
