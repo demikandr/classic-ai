@@ -8,6 +8,7 @@ import itertools
 
 import numpy as np
 from scipy.spatial.distance import cosine
+from sklearn.metrics.pairwise import cosine_similarity
 
 from nltk.tokenize import word_tokenize
 from gensim.models import KeyedVectors
@@ -147,3 +148,6 @@ class Word2vecProcessor(object):
         if vec1 is None or vec2 is None:
             return 2
         return cosine(vec1, vec2)
+    
+    def distances(self, vecs, vec):
+        return -cosine_similarity(vecs, vec)

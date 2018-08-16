@@ -7,6 +7,8 @@ import copy
 from utils import Phonetic, PoemTemplateLoader, Word2vecProcessor
 import nltk.corpus
 
+import numpy as np
+
 # Каталог с общими наборами данных, доступный на проверяющем сервере
 # Нет необходимости добавлять файлы из этого каталога в архив с решением
 # (подробности см. в описании соревнования)
@@ -27,6 +29,7 @@ word_by_form = phonetic.from_accents_dict()
 
 stopwords = nltk.corpus.stopwords.words('russian')
 accents_dict_keys = set(phonetic.accents_dict.keys())
+
 def generate_poem(seed, poet_id):
     """
     Алгоритм генерации стихотворения на основе фонетических шаблонов
@@ -65,9 +68,13 @@ def generate_poem(seed, poet_id):
 
             replacement_candidates.append(token)
             # из кандидатов берем максимально близкое теме слово
+            replacement_vecs = (word2vec.word_vector(word) for word in replacement_candidates)
+            replacement_candidates, replacement_vecs = list(zip(\
+                *[(word, vec) for word, vec in zip(replacement_candidates, replacement_vecs) if vec is not None]))
+            replacement_distances = word2vec.distances(np.vstack(replacement_vecs), np.array([seed_vec,]))
             word2vec_distances = [
-                (replacement_word, word2vec.distance(seed_vec, word2vec.word_vector(replacement_word)))
-                for replacement_word in replacement_candidates
+                (replacement_word, replacement_distance)
+                for replacement_word, replacement_distance in zip(replacement_candidates, replacement_distances)
                 ]
             word2vec_distances.sort(key=lambda pair: pair[1])
             new_word, _ = word2vec_distances[0]
