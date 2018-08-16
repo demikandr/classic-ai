@@ -75,8 +75,8 @@ def generate_poem(seed, poet_id):
                 continue
             # min_phonetic_distance = min(d for w, d in candidate_phonetic_distances)
             # replacement_candidates = [w for w, d in candidate_phonetic_distances if d == min_phonetic_distance]
-            print(ti)
-            replacement_candidates = [w for w in word_by_form[form] if tag_word(w) == tagging[ti][1]]
+            # print(ti)
+            replacement_candidates = [w for w in word_by_form[form]]
 
             replacement_candidates.append(token)
             # из кандидатов берем максимально близкое теме слово
@@ -89,9 +89,14 @@ def generate_poem(seed, poet_id):
                 for replacement_word, replacement_distance in zip(replacement_candidates, replacement_distances)
                 ]
             word2vec_distances.sort(key=lambda pair: pair[1])
-            new_word, _ = word2vec_distances[0]
-            new_word = new_word.lower() # doesnt work
-            poem[li][ti] = new_word
+            word_is_found = False
+            for new_word, _ in word2vec_distances[:100]:
+                if tag_word(new_word) == tagging[ti][1]:
+                    word_is_found = True
+                    break
+            if word_is_found:
+                new_word = new_word.lower() # doesnt work
+                poem[li][ti] = new_word
 
     # собираем получившееся стихотворение из слов
     generated_poem = '\n'.join([' '.join([token for token in line]) for line in poem])
