@@ -1,5 +1,9 @@
 # import nltk
 # nltk.download('stopwords')
+# nltk.download('punkt')
+# nltk.download('averaged_perceptron_tagger')
+# nltk.download('averaged_perceptron_tagger_ru')
+# nltk.download('universal_tagset')
 
 import os
 import copy
@@ -27,6 +31,12 @@ word_by_form = phonetic.from_accents_dict()
 
 stopwords = nltk.corpus.stopwords.words('russian')
 accents_dict_keys = set(phonetic.accents_dict.keys())
+
+def tag_word(word):
+    
+    res = nltk.tag.pos_tag([word], lang="rus")[0]
+    return res[1]
+
 def generate_poem(seed, poet_id):
     """
     Алгоритм генерации стихотворения на основе фонетических шаблонов
@@ -42,6 +52,8 @@ def generate_poem(seed, poet_id):
 
     # заменяем слова в шаблоне на более релевантные теме
     for li, line in enumerate(poem):
+        tagging = nltk.tag.pos_tag(line, lang='rus')
+        print(tagging)
         for ti, token in enumerate(line[:-1]):
             if not token.isalpha():
                 continue
@@ -61,7 +73,8 @@ def generate_poem(seed, poet_id):
                 continue
             # min_phonetic_distance = min(d for w, d in candidate_phonetic_distances)
             # replacement_candidates = [w for w, d in candidate_phonetic_distances if d == min_phonetic_distance]
-            replacement_candidates = [w for w in word_by_form[form]]
+            print(ti)
+            replacement_candidates = [w for w in word_by_form[form] if tag_word(w) == tagging[ti][1]]
 
             replacement_candidates.append(token)
             # из кандидатов берем максимально близкое теме слово
@@ -71,7 +84,7 @@ def generate_poem(seed, poet_id):
                 ]
             word2vec_distances.sort(key=lambda pair: pair[1])
             new_word, _ = word2vec_distances[0]
-
+            new_word = new_word.lower() # doesnt work
             poem[li][ti] = new_word
 
     # собираем получившееся стихотворение из слов
