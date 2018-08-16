@@ -26,7 +26,7 @@ phonetic = Phonetic('data/words_accent.json.bz2')
 word_by_form = phonetic.from_accents_dict()
 
 stopwords = nltk.corpus.stopwords.words('russian')
-accents_dict_keys = set(phonetic.accents_dict.keys()) 
+accents_dict_keys = set(phonetic.accents_dict.keys())
 def generate_poem(seed, poet_id):
     """
     Алгоритм генерации стихотворения на основе фонетических шаблонов
@@ -53,15 +53,15 @@ def generate_poem(seed, poet_id):
                 continue
             # выбираем слова - кандидаты на замену: максимально похожие фонетически на исходное слово
             form = phonetic.get_form(token)
-            candidate_phonetic_distances = [
-                (replacement_word, phonetic.sound_distance(replacement_word, word))
-                for replacement_word in word_by_form[form]
-                ]
-            if not candidate_phonetic_distances or form == (0, 0):
+            # candidate_phonetic_distances = [
+            #    (replacement_word, phonetic.sound_distance(replacement_word, word))
+            #    for replacement_word in word_by_form[form]
+            #    ]
+            if not word_by_form[form] or form == (0, 0):
                 continue
             # min_phonetic_distance = min(d for w, d in candidate_phonetic_distances)
             # replacement_candidates = [w for w, d in candidate_phonetic_distances if d == min_phonetic_distance]
-            replacement_candidates = [w for w, d in candidate_phonetic_distances]
+            replacement_candidates = [w for w in word_by_form[form]]
 
             replacement_candidates.append(token)
             # из кандидатов берем максимально близкое теме слово
