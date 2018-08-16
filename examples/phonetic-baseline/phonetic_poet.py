@@ -11,7 +11,7 @@ import copy
 from utils import Phonetic, PoemTemplateLoader, Word2vecProcessor
 import nltk.corpus
 import jellyfish
-
+import pysoundex
 # Каталог с общими наборами данных, доступный на проверяющем сервере
 # Нет необходимости добавлять файлы из этого каталога в архив с решением
 # (подробности см. в описании соревнования)
@@ -38,6 +38,8 @@ def tag_word(word):
     res = nltk.tag.pos_tag([word], lang="rus")[0]
     return res[1]
 
+def string_distance(s1, s2):
+    return sum(int(a != b) for a, b in zip(s1, s2))
 def generate_poem(seed, poet_id):
     """
     Алгоритм генерации стихотворения на основе фонетических шаблонов
@@ -54,12 +56,12 @@ def generate_poem(seed, poet_id):
     # заменяем слова в шаблоне на более релевантные теме
     for li, line in enumerate(poem):
         tagging = nltk.tag.pos_tag(line, lang='rus')
-        print(tagging)
         for ti, token in enumerate(line[:-1]):
             if not token.isalpha():
                 continue
 
             word = token.lower()
+            word_sound = pysoundex.soundex(word, lang='ru_RU') 
             if word in stopwords:
                 continue
             if word not in accents_dict_keys:
@@ -74,8 +76,8 @@ def generate_poem(seed, poet_id):
                 continue
             # min_phonetic_distance = min(d for w, d in candidate_phonetic_distances)
             # replacement_candidates = [w for w, d in candidate_phonetic_distances if d == min_phonetic_distance]
-            replacement_candidates = [w for w in word_by_form[form] if tag_word(w) == tagging[ti][1] and jellyfish.jaro_distance(w, word) > 0.4]
-
+            replacement_candidates = [w for w in word_by_form[form] if tag_word(w) == tagging[ti][1] and string_distance(pysoundex.soundex(w, lang='ru_RU'), word_sound) > 1]
+            print(len(replacement_candidates))
             replacement_candidates.append(token)
             # из кандидатов берем максимально близкое теме слово
             word2vec_distances = [
@@ -85,6 +87,8 @@ def generate_poem(seed, poet_id):
             word2vec_distances.sort(key=lambda pair: pair[1])
             new_word, _ = word2vec_distances[0]
             new_word = new_word.lower() # doesnt work
+            if word != new_word:
+                print(word, new_word, jellyfish.jaro_distance(word, new_word))
             poem[li][ti] = new_word
 
     # собираем получившееся стихотворение из слов
