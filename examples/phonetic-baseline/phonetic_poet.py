@@ -47,6 +47,7 @@ def generate_poem(seed, poet_id):
     # выбираем шаблон на основе случайного стихотворения из корпуса
     template = template_loader.get_random_template(poet_id)
     poem = copy.deepcopy(template)
+    print(seed)
     print('\n'.join((' '.join(line) for line in poem)))
 
     # оцениваем word2vec-вектор темы
@@ -102,5 +103,6 @@ def generate_poem(seed, poet_id):
 
     # собираем получившееся стихотворение из слов
     generated_poem = '\n'.join([' '.join([token for token in line]) for line in poem])
-
+    print()
+    print(generated_poem)
     return generated_poem
