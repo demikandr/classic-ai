@@ -10,6 +10,7 @@ import copy
 
 from utils import Phonetic, PoemTemplateLoader, Word2vecProcessor
 import nltk.corpus
+import jellyfish
 
 # Каталог с общими наборами данных, доступный на проверяющем сервере
 # Нет необходимости добавлять файлы из этого каталога в архив с решением
@@ -73,8 +74,7 @@ def generate_poem(seed, poet_id):
                 continue
             # min_phonetic_distance = min(d for w, d in candidate_phonetic_distances)
             # replacement_candidates = [w for w, d in candidate_phonetic_distances if d == min_phonetic_distance]
-            print(ti)
-            replacement_candidates = [w for w in word_by_form[form] if tag_word(w) == tagging[ti][1]]
+            replacement_candidates = [w for w in word_by_form[form] if tag_word(w) == tagging[ti][1] and jellyfish.jaro_distance(w, word) > 0.4]
 
             replacement_candidates.append(token)
             # из кандидатов берем максимально близкое теме слово
