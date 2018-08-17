@@ -149,7 +149,14 @@ class Word2vecProcessor(object):
             if token.isalpha()
             ]
         word_vectors = [vec for vec in word_vectors if vec is not None]
-        return np.mean(word_vectors, axis=0)
+        if word_vectors:
+            result = np.mean(word_vectors, axis=0)
+        else:
+            print("Failed to build the topic representation")
+            result = self.word_vector('пусто')
+           
+        print(result.shape)
+        return result
 
     def distance(self, vec1, vec2):
         if vec1 is None or vec2 is None:

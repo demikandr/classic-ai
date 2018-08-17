@@ -1,4 +1,4 @@
 {
-    "image": "sberbank/python",
+    "image": "itasarom/classic_ai_first",
     "entry_point": "python server.py"
 }
