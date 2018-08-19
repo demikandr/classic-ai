@@ -34,10 +34,13 @@ word_by_form = phonetic.from_accents_dict()
 stopwords = nltk.corpus.stopwords.words('russian')
 accents_dict_keys = set(phonetic.accents_dict.keys())
 
+tag_cache = {}
+
 def tag_word(word):
-    
-    res = nltk.tag.pos_tag([word], lang="rus")[0]
-    return res[1]
+    if word in tag_cache:
+        return tag_cache[word]
+    tag_cache[word] = nltk.tag.pos_tag([word], lang="rus")[0][1]
+    return tag_cache[word]
 
 def generate_poem(seed, poet_id):
     """
@@ -97,6 +100,7 @@ def generate_poem(seed, poet_id):
                     word_is_found = True
                     break
             if word_is_found:
+                print(word, new_word)
                 new_word = new_word.lower() # doesnt work
                 poem[li][ti] = new_word
 
