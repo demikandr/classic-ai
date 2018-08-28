@@ -22,11 +22,11 @@ DATASETS_PATH = os.environ.get('DATASETS_PATH', '../../data')
 template_loader = PoemTemplateLoader(os.path.join(DATASETS_PATH, 'classic_poems.json'))
 
 # Word2vec модель для оценки схожести слов и темы: берем из каталога RusVectores.org
-# word2vec = Word2vecProcessor(os.path.join(DATASETS_PATH, 'rusvectores/web_upos_cbow_300_20_2017.bin.gz'))
+word2vec = Word2vecProcessor(os.path.join(DATASETS_PATH, 'rusvectores/web_upos_cbow_300_20_2017.bin.gz'))
 # word2vec = Word2vecProcessor(os.path.join(DATASETS_PATH, 'wiki.ru/wiki.ru.vec'))
-# word2vec = Word2vecProcessor(os.path.join(DATASETS_PATH, 'wiki.ru/wiki.ru.vec'))
+# word2vec = Word2vecProcessor(os.path.join('wiki.ru.vec'))
 # word2vec = Word2vecProcessor(os.path.join(DATASETS_PATH, 'wiki.ru/wiki.ru'))
-word2vec = Word2vecProcessor(os.path.join(DATASETS_PATH, 'cc.ru.300.bin '))
+# word2vec = Word2vecProcessor(os.path.join(DATASETS_PATH, 'cc.ru.300'))
 
 # Словарь ударений: берется из локального файла, который идет вместе с решением
 # phonetic = Phonetic('data/words_accent.json.bz2')
@@ -41,11 +41,36 @@ accents_dict_keys = set(phonetic.accents_dict.keys())
 
 tag_cache = {}
 
+from pymystem3 import Mystem
+mystem = Mystem()
+
+# def tag_word(word):
+#     if word in tag_cache:
+#         return tag_cache[word]
+#     tag_cache[word] = nltk.tag.pos_tag([word], lang="rus")[0][1]
+#     return tag_cache[word]
+
 def tag_word(word):
     if word in tag_cache:
         return tag_cache[word]
-    tag_cache[word] = nltk.tag.pos_tag([word], lang="rus")[0][1]
+    tag_cache[word] = mystem.analyze(word)[0]['analysis'][0]['gr']
     return tag_cache[word]
+
+def tag_sentence(sent):
+    analysis = mystem.analyze(sent)
+    print(analysis)
+    result = []
+    # raise KeyError()
+    # try:
+    for a in analysis:
+            if 'analysis' in a:
+            # print(a)
+                result.append(a['analysis'][0]['gr'])
+    # except Exception as e:
+        # print(">>>>>>>>>>>>>>>>>>>>>", e)
+        # raise
+
+    return result
 
 def generate_poem(seed, poet_id):
     """
@@ -62,7 +87,9 @@ def generate_poem(seed, poet_id):
 
     # заменяем слова в шаблоне на более релевантные теме
     for li, line in enumerate(poem):
-        tagging = nltk.tag.pos_tag(line, lang='rus')
+        # print(line)
+        tagging = tag_sentence(" ".join(line))
+        # tagging = nltk.tag.pos_tag(line, lang='rus')
         print(tagging)
         for ti, token in enumerate(line[:-1]):
             if not token.isalpha():
@@ -103,12 +130,12 @@ def generate_poem(seed, poet_id):
             word_is_found = False
             for new_word, _ in word2vec_distances[:100]:
                 new_tag = tag_word(new_word) 
-                if new_tag == tagging[ti][1]:
-                    print("Found ", new_word, "(", new_tag, " == ", tagging[ti][1], ")")
+                if new_tag == tagging[ti]:
+                    print("Found ", new_word, "(", new_tag, " == ", tagging[ti], ")")
                     word_is_found = True
                     break
                 else:
-                    print("\tDiscarding ", new_word, "(", new_tag, " != ", tagging[ti][1], ")")
+                    print("\tDiscarding ", new_word, "(", new_tag, " != ", tagging[ti], ")")
             if word_is_found:
                 print(word, new_word)
                 new_word = new_word.lower() # doesnt work

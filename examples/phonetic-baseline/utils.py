@@ -176,9 +176,9 @@ class Word2vecProcessor(object):
     def __init__(self, w2v_model_file):
         # print(w2v_model_file)
         self.mystem = Mystem()
-        # self.word2vec = KeyedVectors.load_word2vec_format(w2v_model_file, binary=False)
+        self.word2vec = KeyedVectors.load_word2vec_format(w2v_model_file, binary=True)
         # self.word2vec = FastText.FastTextKeyedVectors.load_word2vec_format(w2v_model_file, case_insensitive=True)
-        self.word2vec = FastText.load_fasttext_format(w2v_model_file)
+        # self.word2vec = FastText.load_fasttext_format(w2v_model_file)
         # self.word2vec = FastText.load_word2vec_format(w2v_model_file)
         self.lemma2word = {word.split('_')[0]: word for word in self.word2vec.index2word}
         self.word2lemma2word = {}
