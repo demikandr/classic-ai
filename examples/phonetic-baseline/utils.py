@@ -122,12 +122,64 @@ class PoemTemplateLoader(object):
         return random.choice(self.poet_templates[poet_id])
 
 
+# class Word2vecProcessor(object):
+#     """Объект для работы с моделью word2vec сходства слов"""
+
+#     def __init__(self, w2v_model_file):
+#         self.mystem = Mystem()
+#         self.word2vec = KeyedVectors.load_word2vec_format(w2v_model_file, binary=True)
+#         self.lemma2word = {word.split('_')[0]: word for word in self.word2vec.index2word}
+#         self.word2lemma2word = {}
+
+#     def get_word2lemma2word(self, word):
+#         lemma = self.mystem.lemmatize(word)[0]
+#         word = self.lemma2word.get(lemma)
+#         return word
+        
+#     def word_vector(self, word):
+#         if word not in self.word2lemma2word:
+#             self.word2lemma2word[word] = self.get_word2lemma2word(word)
+#         word = self.word2lemma2word[word]
+#         return self.word2vec[word] if word in self.word2vec else None
+
+#     def text_vector(self, text):
+#         """Вектор текста, получается путем усреднения векторов всех слов в тексте"""
+#         word_vectors = [
+#             self.word_vector(token)
+#             for token in word_tokenize(text.lower())
+#             if token.isalpha()
+#             ]
+#         word_vectors = [vec for vec in word_vectors if vec is not None]
+#         if word_vectors:
+#             result = np.mean(word_vectors, axis=0)
+#         else:
+#             print("Failed to build the topic representation")
+#             result = self.word_vector('пусто')
+           
+#         print(result.shape)
+#         return result
+
+
+
+#     def distance(self, vec1, vec2):
+#         if vec1 is None or vec2 is None:
+#             return 2
+#         return cosine(vec1, vec2)
+    
+#     def distances(self, vecs, vec):
+#         return -cosine_similarity(vecs, vec)
+
+
 class Word2vecProcessor(object):
     """Объект для работы с моделью word2vec сходства слов"""
 
     def __init__(self, w2v_model_file):
+        # print(w2v_model_file)
         self.mystem = Mystem()
-        self.word2vec = KeyedVectors.load_word2vec_format(w2v_model_file, binary=True)
+        # self.word2vec = KeyedVectors.load_word2vec_format(w2v_model_file, binary=False)
+        # self.word2vec = FastText.FastTextKeyedVectors.load_word2vec_format(w2v_model_file, case_insensitive=True)
+        self.word2vec = FastText.load_fasttext_format(w2v_model_file)
+        # self.word2vec = FastText.load_word2vec_format(w2v_model_file)
         self.lemma2word = {word.split('_')[0]: word for word in self.word2vec.index2word}
         self.word2lemma2word = {}
 
@@ -159,6 +211,8 @@ class Word2vecProcessor(object):
         print(result.shape)
         return result
 
+        
+
     def distance(self, vec1, vec2):
         if vec1 is None or vec2 is None:
             return 2
@@ -166,3 +220,4 @@ class Word2vecProcessor(object):
     
     def distances(self, vecs, vec):
         return -cosine_similarity(vecs, vec)
+

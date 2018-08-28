@@ -22,15 +22,19 @@ DATASETS_PATH = os.environ.get('DATASETS_PATH', '../../data')
 template_loader = PoemTemplateLoader(os.path.join(DATASETS_PATH, 'classic_poems.json'))
 
 # Word2vec модель для оценки схожести слов и темы: берем из каталога RusVectores.org
-word2vec = Word2vecProcessor(os.path.join(DATASETS_PATH, 'rusvectores/web_upos_cbow_300_20_2017.bin.gz'))
+# word2vec = Word2vecProcessor(os.path.join(DATASETS_PATH, 'rusvectores/web_upos_cbow_300_20_2017.bin.gz'))
+# word2vec = Word2vecProcessor(os.path.join(DATASETS_PATH, 'wiki.ru/wiki.ru.vec'))
+# word2vec = Word2vecProcessor(os.path.join(DATASETS_PATH, 'wiki.ru/wiki.ru.vec'))
+# word2vec = Word2vecProcessor(os.path.join(DATASETS_PATH, 'wiki.ru/wiki.ru'))
+word2vec = Word2vecProcessor(os.path.join(DATASETS_PATH, 'cc.ru.300.bin '))
 
 # Словарь ударений: берется из локального файла, который идет вместе с решением
 # phonetic = Phonetic('data/words_accent.json.bz2')
-phonetic = Phonetic('data/accents_dicts.json.bz2')
+phonetic = Phonetic('data/accents.json.bz2')
 
 # Словарь слов-кандидатов по фонетическим формам: строится из набора данных SDSJ 2017
 word_by_form = phonetic.form_dictionary_from_csv(os.path.join(DATASETS_PATH, 'sdsj2017_sberquad.csv'))
-word_by_form = phonetic.from_accents_dict()
+# word_by_form = phonetic.from_accents_dict()
 
 stopwords = nltk.corpus.stopwords.words('russian')
 accents_dict_keys = set(phonetic.accents_dict.keys())
