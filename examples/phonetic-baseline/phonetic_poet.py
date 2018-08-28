@@ -44,17 +44,19 @@ tag_cache = {}
 from pymystem3 import Mystem
 mystem = Mystem()
 
-# def tag_word(word):
-#     if word in tag_cache:
-#         return tag_cache[word]
-#     tag_cache[word] = nltk.tag.pos_tag([word], lang="rus")[0][1]
-#     return tag_cache[word]
-
 def tag_word(word):
     if word in tag_cache:
         return tag_cache[word]
-    tag_cache[word] = mystem.analyze(word)[0]['analysis'][0]['gr']
+    tag_cache[word] = nltk.tag.pos_tag([word], lang="rus")[0][1]
     return tag_cache[word]
+
+# def tag_word(word):
+#     if word in tag_cache:
+#         return tag_cache[word]
+#     a = mystem.analyze(word)
+#     print(a)
+#     tag_cache[word] = a[0]['analysis'][0]['gr']
+#     return tag_cache[word]
 
 def tag_sentence(sent):
     analysis = mystem.analyze(sent)
@@ -88,8 +90,8 @@ def generate_poem(seed, poet_id):
     # заменяем слова в шаблоне на более релевантные теме
     for li, line in enumerate(poem):
         # print(line)
-        tagging = tag_sentence(" ".join(line))
-        # tagging = nltk.tag.pos_tag(line, lang='rus')
+        # tagging = tag_sentence(" ".join(line))
+        tagging = nltk.tag.pos_tag(line, lang='rus')
         print(tagging)
         for ti, token in enumerate(line[:-1]):
             if not token.isalpha():
@@ -128,14 +130,14 @@ def generate_poem(seed, poet_id):
                 ]
             word2vec_distances.sort(key=lambda pair: pair[1])
             word_is_found = False
-            for new_word, _ in word2vec_distances[:100]:
+            for new_word, _ in word2vec_distances[:150]:
                 new_tag = tag_word(new_word) 
-                if new_tag == tagging[ti]:
-                    print("Found ", new_word, "(", new_tag, " == ", tagging[ti], ")")
+                if new_tag == tagging[ti][1]:
+                    print("Found ", new_word, "(", new_tag, " == ", tagging[ti][1], ")")
                     word_is_found = True
                     break
                 else:
-                    print("\tDiscarding ", new_word, "(", new_tag, " != ", tagging[ti], ")")
+                    print("\tDiscarding ", new_word, "(", new_tag, " != ", tagging[ti][1], ")")
             if word_is_found:
                 print(word, new_word)
                 new_word = new_word.lower() # doesnt work
