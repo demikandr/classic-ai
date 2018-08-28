@@ -25,10 +25,11 @@ template_loader = PoemTemplateLoader(os.path.join(DATASETS_PATH, 'classic_poems.
 word2vec = Word2vecProcessor(os.path.join(DATASETS_PATH, 'rusvectores/web_upos_cbow_300_20_2017.bin.gz'))
 
 # Словарь ударений: берется из локального файла, который идет вместе с решением
-phonetic = Phonetic('data/words_accent.json.bz2')
+# phonetic = Phonetic('data/words_accent.json.bz2')
+phonetic = Phonetic('data/accents_dicts.json.bz2')
 
 # Словарь слов-кандидатов по фонетическим формам: строится из набора данных SDSJ 2017
-# word_by_form = phonetic.form_dictionary_from_csv(os.path.join(DATASETS_PATH, 'sdsj2017_sberquad.csv'))
+word_by_form = phonetic.form_dictionary_from_csv(os.path.join(DATASETS_PATH, 'sdsj2017_sberquad.csv'))
 word_by_form = phonetic.from_accents_dict()
 
 stopwords = nltk.corpus.stopwords.words('russian')
@@ -67,6 +68,7 @@ def generate_poem(seed, poet_id):
             if word in stopwords:
                 continue
             if word not in accents_dict_keys:
+                print(word, " has no accent")
                 continue
             # выбираем слова - кандидаты на замену: максимально похожие фонетически на исходное слово
             form = phonetic.get_form(token)
@@ -96,9 +98,13 @@ def generate_poem(seed, poet_id):
             word2vec_distances.sort(key=lambda pair: pair[1])
             word_is_found = False
             for new_word, _ in word2vec_distances[:100]:
-                if tag_word(new_word) == tagging[ti][1]:
+                new_tag = tag_word(new_word) 
+                if new_tag == tagging[ti][1]:
+                    print("Found ", new_word, "(", new_tag, " == ", tagging[ti][1], ")")
                     word_is_found = True
                     break
+                else:
+                    print("\tDiscarding ", new_word, "(", new_tag, " != ", tagging[ti][1], ")")
             if word_is_found:
                 print(word, new_word)
                 new_word = new_word.lower() # doesnt work

@@ -9,6 +9,7 @@ import itertools
 import numpy as np
 from scipy.spatial.distance import cosine
 from sklearn.metrics.pairwise import cosine_similarity
+from gensim.models.wrappers import FastText
 
 from nltk.tokenize import word_tokenize
 from gensim.models import KeyedVectors
